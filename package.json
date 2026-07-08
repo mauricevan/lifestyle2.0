@@ -1,0 +1,18 @@
+{
+  "name": "rpm-app",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@9.15.4",
+  "scripts": {
+    "mobile": "pnpm --filter @rpm/mobile start",
+    "mobile:dev": "pnpm --filter @rpm/mobile start -- --dev-client",
+    "build:android": "pnpm --filter @rpm/mobile build:android",
+    "build:ios": "pnpm --filter @rpm/mobile build:ios",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "pnpm -r lint"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

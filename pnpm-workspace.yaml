@@ -1,0 +1,9 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
+allowBuilds:
+  react-native-nitro-modules: false
+
+onlyBuiltDependencies:
+  - react-native-nitro-modules

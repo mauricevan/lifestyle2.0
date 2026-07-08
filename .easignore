@@ -1,0 +1,10 @@
+# Dependencies are installed from monorepo root via pnpm workspace.
+# Do not ignore lockfile or workspace config.
+
+node_modules/
+.git/
+*.md
+!README.md
+apps/mobile/.env
+.env
+.env.*

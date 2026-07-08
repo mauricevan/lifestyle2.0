@@ -1,0 +1,65 @@
+{
+  "expo": {
+    "name": "RPM",
+    "slug": "rpm",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "rpm",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "icon": "./assets/icon.png",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.rpm.app",
+      "infoPlist": {
+        "UIBackgroundModes": ["fetch", "processing"],
+        "NSHealthShareUsageDescription": "RPM reads heart rate, steps, and sleep to manage your daily energy budget automatically.",
+        "NSHealthUpdateUsageDescription": "RPM does not write health data."
+      }
+    },
+    "android": {
+      "package": "com.rpm.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#0f0f0f",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "permissions": [
+        "android.permission.health.READ_STEPS",
+        "android.permission.health.READ_HEART_RATE",
+        "android.permission.health.READ_SLEEP",
+        "android.permission.POST_NOTIFICATIONS"
+      ]
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 35,
+            "minSdkVersion": 26
+          }
+        }
+      ],
+      [
+        "@kingstinct/react-native-healthkit",
+        {
+          "NSHealthShareUsageDescription": "RPM reads heart rate, steps, and sleep to manage your daily energy budget automatically.",
+          "NSHealthUpdateUsageDescription": "RPM does not write health data.",
+          "background": true
+        }
+      ],
+      "expo-health-connect",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#16a34a"
+        }
+      ]
+    ]
+  }
+}
