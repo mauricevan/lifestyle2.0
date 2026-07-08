@@ -6,7 +6,6 @@
   "build": {
     "base": {
       "node": "22.14.0",
-      "pnpm": "9.15.4",
       "corepack": true,
       "env": {
         "EXPO_PUBLIC_SUPABASE_URL": "https://nsfdmrctapcdfwgtsjnj.supabase.co"

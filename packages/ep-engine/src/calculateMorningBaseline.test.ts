@@ -1,4 +1,8 @@
-import { calculateMorningBaseline, mean } from "./calculateMorningBaseline";
+import {
+  buildBaselineRecord,
+  calculateMorningBaseline,
+  mean,
+} from "./calculateMorningBaseline";
 
 describe("calculateMorningBaseline", () => {
   it("returns full budget when deviation is within threshold", () => {
@@ -23,6 +27,24 @@ describe("calculateMorningBaseline", () => {
       last14DaysRollingAvg: [],
     });
     expect(result).toEqual({ amount: 100, status: "voorlopig" });
+  });
+
+  it("triggers maintenance above elevated threshold", () => {
+    const result = calculateMorningBaseline({
+      morningHrSamples: [74, 74],
+      last14DaysRollingAvg: [65],
+    });
+    expect(result).toEqual({ amount: 50, status: "onderhoud" });
+  });
+});
+
+describe("buildBaselineRecord", () => {
+  it("computes deviation from rolling average", () => {
+    const record = buildBaselineRecord([70, 72], [65, 66]);
+    expect(record.value).toBe(71);
+    expect(record.rollingAverage).toBe(65.5);
+    expect(record.deviation).toBeCloseTo(5.5);
+    expect(record.isProvisional).toBe(false);
   });
 });
 

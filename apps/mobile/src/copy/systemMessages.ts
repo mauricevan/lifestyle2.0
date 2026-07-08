@@ -15,6 +15,10 @@ export const systemMessages = {
   onboardingDoneTitle: "Systeem actief",
   onboardingDoneBody:
     "Baseline wordt de komende 14 dagen organisch opgebouwd. Open de app wanneer je wilt — de meter werkt op de achtergrond.",
+  onboardingFinishing: "Baseline berekenen…",
+  onboardingGoToGauge: "Naar de meter",
+
+  appLoading: "Systeem opstarten…",
 
   morningFullBudget: (ep: number) => `Vandaag: ${ep} EP. Volle tank.`,
   morningMaintenance: (ep: number) =>

@@ -31,4 +31,16 @@ describe("calculateBurnRate", () => {
       })
     ).toBe(15);
   });
+
+  it("uses tiered inflation between 30 and 40 EP per hour", () => {
+    expect(
+      calculateBurnRate({ currentHr: 98, baselineHr: baseline, stepsPerMinute: 0 })
+    ).toBe(28);
+  });
+
+  it("does not inflate below hyperfocus threshold", () => {
+    expect(
+      calculateBurnRate({ currentHr: 84, baselineHr: baseline, stepsPerMinute: 0 })
+    ).toBe(15);
+  });
 });

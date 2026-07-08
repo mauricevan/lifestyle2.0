@@ -2,7 +2,7 @@
  * App bootstrap hook — auth, sync, monitoring.
  */
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { ensureAnonymousSession } from "../services/supabase/client";
 import { getOnboardingFlag } from "../services/sync/localStore";
 import { mergeEpState, subscribeEpStateRealtime } from "../services/sync/supabaseSync";
@@ -17,17 +17,20 @@ function todayKey(): string {
 }
 
 export function useRpmBootstrap(): { isReady: boolean; needsOnboarding: boolean } {
+  const [isReady, setIsReady] = useState(false);
   const setUserId = useRpmStore((s) => s.setUserId);
   const setOnboardingComplete = useRpmStore((s) => s.setOnboardingComplete);
   const initEpState = useRpmStore((s) => s.initEpState);
   const isOnboardingComplete = useRpmStore((s) => s.isOnboardingComplete);
 
   useEffect(() => {
+    let isMounted = true;
     let stopMonitoring: (() => void) | undefined;
     let stopEvening: (() => void) | undefined;
     let stopRealtime: (() => void) | undefined;
 
     const boot = async () => {
+      setIsReady(false);
       await requestNotificationPermissions();
       const disclaimer = await getOnboardingFlag("disclaimer_accepted");
       const wearable = await getOnboardingFlag("wearable_connected");
@@ -39,6 +42,9 @@ export function useRpmBootstrap(): { isReady: boolean; needsOnboarding: boolean 
       setUserId(userId);
 
       if (!complete) {
+        if (isMounted) {
+          setIsReady(true);
+        }
         return;
       }
 
@@ -60,10 +66,15 @@ export function useRpmBootstrap(): { isReady: boolean; needsOnboarding: boolean 
           useRpmStore.setState({ epState: state });
         });
       }
+
+      if (isMounted) {
+        setIsReady(true);
+      }
     };
 
     void boot();
     return () => {
+      isMounted = false;
       stopMonitoring?.();
       stopEvening?.();
       stopRealtime?.();
@@ -71,7 +82,7 @@ export function useRpmBootstrap(): { isReady: boolean; needsOnboarding: boolean 
   }, [initEpState, isOnboardingComplete, setOnboardingComplete, setUserId]);
 
   return {
-    isReady: true,
+    isReady,
     needsOnboarding: !isOnboardingComplete,
   };
 }

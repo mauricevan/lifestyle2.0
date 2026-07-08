@@ -12,7 +12,10 @@
       "supportsTablet": false,
       "bundleIdentifier": "com.rpm.app",
       "infoPlist": {
-        "UIBackgroundModes": ["fetch", "processing"],
+        "UIBackgroundModes": [
+          "fetch",
+          "processing"
+        ],
         "NSHealthShareUsageDescription": "RPM reads heart rate, steps, and sleep to manage your daily energy budget automatically.",
         "NSHealthUpdateUsageDescription": "RPM does not write health data."
       }
@@ -60,6 +63,12 @@
           "color": "#16a34a"
         }
       ]
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "e4204657-83e6-4aa9-8f9e-6a775219bfb4"
+      }
+    }
   }
 }

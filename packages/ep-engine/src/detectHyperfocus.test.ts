@@ -48,4 +48,15 @@ describe("detectHyperfocus", () => {
 
     expect(detectHyperfocus(samples, baseline, true, config).isActive).toBe(false);
   });
+
+  it("ignores elevated HR when user is walking", () => {
+    const start = new Date("2026-01-01T10:00:00Z");
+    const samples = Array.from({ length: 25 }, (_, index) => ({
+      timestamp: new Date(start.getTime() + index * 60 * 1000),
+      hrBpm: 95,
+      stepsPerMinute: 40,
+    }));
+
+    expect(detectHyperfocus(samples, baseline, false, config).isActive).toBe(false);
+  });
 });

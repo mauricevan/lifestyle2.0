@@ -41,11 +41,13 @@ De `.env` wordt niet meegestuurd naar EAS. Zet de anon key als secret:
 npx eas env:create \
   --name EXPO_PUBLIC_SUPABASE_ANON_KEY \
   --value "jouw-sb_publishable_key_hier" \
-  --visibility secret \
+  --visibility sensitive \
   --environment development \
   --environment preview \
   --environment production
 ```
+
+`EXPO_PUBLIC_*` mag **niet** `--visibility secret` — gebruik `sensitive` of `plaintext` (Expo-weergave in de gebouwde app).
 
 `EXPO_PUBLIC_SUPABASE_URL` staat al in `eas.json` (base profile).
 

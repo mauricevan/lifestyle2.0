@@ -23,6 +23,17 @@ describe("accumulateEpSpend", () => {
     expect(result.spent).toBe(100);
     expect(result.remaining).toBe(0);
   });
+
+  it("returns zero spend when elapsed time is zero", () => {
+    const result = accumulateEpSpend({
+      spent: 12,
+      budget: 100,
+      burnRatePerHour: 30,
+      elapsedMs: 0,
+    });
+    expect(result.spent).toBe(12);
+    expect(result.percentUsed).toBe(12);
+  });
 });
 
 describe("gauge helpers", () => {
@@ -30,7 +41,18 @@ describe("gauge helpers", () => {
     expect(epToGaugeRpm(50)).toBe(4000);
   });
 
+  it("clamps RPM to gauge max", () => {
+    expect(epToGaugeRpm(150)).toBe(8000);
+    expect(epToGaugeRpm(-10)).toBe(0);
+  });
+
   it("returns orange zone during hyperfocus", () => {
     expect(getGaugeZone(30, true)).toBe("orange");
+  });
+
+  it("returns yellow and red zones by percent used", () => {
+    expect(getGaugeZone(60, false)).toBe("yellow");
+    expect(getGaugeZone(85, false)).toBe("red");
+    expect(getGaugeZone(10, false)).toBe("green");
   });
 });

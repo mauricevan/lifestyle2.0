@@ -11,6 +11,7 @@ packages/shared-types/ Domain types and config defaults
 packages/wearable-adapter/ Wearable provider interface
 supabase/migrations/   Postgres schema + RLS
 docs/RPM-app-plan.md   Product plan reference
+docs/phase2-companion-architecture.md  Phase 2 companion design (pre-implementation)
 ```
 
 ## Prerequisites
@@ -57,4 +58,4 @@ npx pnpm --filter @rpm/ep-engine test
 
 ## Not in Phase 1
 
-Companion laptop lock, forest mode, history dashboard.
+Companion laptop lock (see [`docs/phase2-companion-architecture.md`](docs/phase2-companion-architecture.md)), forest mode, history dashboard.
