@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "packageManager": "pnpm@9.15.4",
   "scripts": {
+    "eas-build-pre-install": "corepack enable",
     "mobile": "pnpm --filter @rpm/mobile start",
     "mobile:dev": "pnpm --filter @rpm/mobile start -- --dev-client",
     "build:android": "pnpm --filter @rpm/mobile build:android",

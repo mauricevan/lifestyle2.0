@@ -103,7 +103,7 @@ Open de **RPM** app op je telefoon (niet Expo Go) en scan de QR-code.
 - Git root moet **`lifestyle2.0/`** zijn (niet `apps/mobile/`)
 - `pnpm-lock.yaml` en `pnpm-workspace.yaml` moeten gecommit zijn
 - `@rpm/*` packages worden via workspace opgelost tijdens EAS build
-- `eas-build-pre-install: corepack enable` staat in `apps/mobile/package.json`
+- `eas-build-pre-install: corepack enable` staat in root `package.json` (monorepo — niet alleen `apps/mobile`)
 
 ## Troubleshooting
 
