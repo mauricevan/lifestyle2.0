@@ -35,3 +35,8 @@ export interface WearableProvider {
 export interface WearableProviderFactory {
   createProvider(): WearableProvider;
 }
+
+export {
+  parseHeartRateMeasurement,
+  decodeBase64ToBytes,
+} from "./parseHeartRateMeasurement";

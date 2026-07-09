@@ -7,6 +7,7 @@ export const tokens = {
   colorAccent: "#d97706",
   colorBg: "#0f0f0f",
   colorSurface: "#1a1a1a",
+  colorBorder: "#2a2a2a",
   colorTextPrimary: "#f5f5f5",
   colorTextSecondary: "#a3a3a3",
   colorSuccess: "#16a34a",

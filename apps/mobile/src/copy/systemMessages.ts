@@ -10,8 +10,22 @@ export const systemMessages = {
 
   onboardingWearableTitle: "Wearable koppelen",
   onboardingWearableBody:
-    "RPM leest hartslag, stappen en slaap automatisch. Geen invoer nodig.",
+    "RPM leest hartslag direct van je band via Bluetooth. Stappen en slaap komen via Health Connect.",
   onboardingWearableConnect: "Toegang verlenen",
+
+  bleCloseWahoo:
+    "Sluit de Wahoo-app volledig af voordat je koppelt — de band kan maar aan één app tegelijk.",
+  bleScanning: "Band zoeken…",
+  bleScanAgain: "Opnieuw zoeken",
+  bleTapToConnect: "Tik om te koppelen",
+  bleConnecting: "Verbinden en hartslag controleren…",
+  bleNoDevices:
+    "Geen band gevonden. Zet de band aan, maak contact vochtig en probeer opnieuw.",
+  bleNoSignal:
+    "Band gevonden maar geen hartslag. Draag de band en wacht op een meting.",
+  bleConnectFailed: "Koppelen mislukt. Probeer opnieuw.",
+  blePermissionDenied: "Bluetooth-toestemming is nodig om de band te koppelen.",
+  settingsRepairBand: "Hartslagband opnieuw koppelen",
   onboardingDoneTitle: "Systeem actief",
   onboardingDoneBody:
     "Baseline wordt de komende 14 dagen organisch opgebouwd. Open de app wanneer je wilt — de meter werkt op de achtergrond.",

@@ -28,6 +28,9 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "permissions": [
+        "android.permission.BLUETOOTH_SCAN",
+        "android.permission.BLUETOOTH_CONNECT",
+        "android.permission.ACCESS_FINE_LOCATION",
         "android.permission.health.READ_STEPS",
         "android.permission.health.READ_HEART_RATE",
         "android.permission.health.READ_SLEEP",
@@ -56,6 +59,14 @@
         }
       ],
       "expo-health-connect",
+      [
+        "react-native-ble-plx",
+        {
+          "isBackgroundEnabled": true,
+          "modes": ["central"],
+          "bluetoothAlwaysPermission": "RPM gebruikt Bluetooth om hartslag van je band te lezen."
+        }
+      ],
       [
         "expo-notifications",
         {

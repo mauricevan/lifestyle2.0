@@ -2,7 +2,7 @@
  * Settings — export/delete data skeleton, emergency contact.
  */
 
-import { Alert, Pressable, Share, StyleSheet, Text, View } from "react-native";
+import { Alert, Platform, Pressable, Share, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
 import { systemMessages } from "../src/copy/systemMessages";
 import {
@@ -49,6 +49,14 @@ export default function SettingsScreen() {
         <Text style={styles.backText}>← Terug</Text>
       </Pressable>
       <Text style={styles.title}>{systemMessages.settingsTitle}</Text>
+      {Platform.OS === "android" ? (
+        <Pressable
+          style={styles.row}
+          onPress={() => router.push("/onboarding/wearable")}
+        >
+          <Text style={styles.rowText}>{systemMessages.settingsRepairBand}</Text>
+        </Pressable>
+      ) : null}
       <Pressable style={styles.row} onPress={() => void handleExport()}>
         <Text style={styles.rowText}>{systemMessages.exportData}</Text>
       </Pressable>

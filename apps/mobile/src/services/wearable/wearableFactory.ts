@@ -4,6 +4,7 @@
 
 import { Platform } from "react-native";
 import type { WearableProvider } from "@rpm/wearable-adapter";
+import { compositeWearableProvider } from "./ble/compositeWearableProvider";
 import { healthConnectProvider } from "./healthConnectProvider";
 import { healthKitProvider } from "./healthKitProvider";
 import { mockWearableProvider } from "./mockWearableProvider";
@@ -13,7 +14,9 @@ export function getWearableProvider(): WearableProvider {
     return healthKitProvider;
   }
   if (Platform.OS === "android") {
-    return healthConnectProvider;
+    return compositeWearableProvider;
   }
   return mockWearableProvider;
 }
+
+export { healthConnectProvider };

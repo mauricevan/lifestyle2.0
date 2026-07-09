@@ -10,6 +10,7 @@ import { requestNotificationPermissions } from "../services/notifications/notifi
 import { runMorningBaseline } from "../features/baseline/morningBaselineService";
 import { startLiveMonitoring } from "../features/live-gauge/hyperfocusMonitor";
 import { startEveningScheduler } from "../features/evening/eveningReportService";
+import { hydrateBleDeviceCache } from "../services/wearable/ble/bleDeviceStore";
 import { useRpmStore } from "../state/rpmStore";
 
 function todayKey(): string {
@@ -32,6 +33,7 @@ export function useRpmBootstrap(): { isReady: boolean; needsOnboarding: boolean 
     const boot = async () => {
       setIsReady(false);
       await requestNotificationPermissions();
+      await hydrateBleDeviceCache();
       const disclaimer = await getOnboardingFlag("disclaimer_accepted");
       const wearable = await getOnboardingFlag("wearable_connected");
       const completeFromStorage = disclaimer === "true" && wearable === "true";
