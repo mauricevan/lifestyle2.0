@@ -6,9 +6,11 @@ import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
 import { BlePairingPanel } from "../../src/components/BlePairingPanel";
 import { systemMessages } from "../../src/copy/systemMessages";
+import { restartLiveMonitoring } from "../../src/features/live-gauge/liveMonitoringService";
 import { setOnboardingFlag } from "../../src/services/sync/localStore";
 import { getWearableProvider } from "../../src/services/wearable/wearableFactory";
 import { healthConnectProvider } from "../../src/services/wearable/wearableFactory";
+import { useRpmStore } from "../../src/state/rpmStore";
 import { tokens } from "../../src/theme/tokens";
 
 async function grantHealthConnectAccess(): Promise<void> {
@@ -19,9 +21,16 @@ async function grantHealthConnectAccess(): Promise<void> {
 }
 
 export default function WearableScreen() {
-  const finishOnboarding = async () => {
+  const isOnboardingComplete = useRpmStore((s) => s.isOnboardingComplete);
+
+  const finishPairing = async () => {
     await grantHealthConnectAccess();
     await setOnboardingFlag("wearable_connected", "true");
+    restartLiveMonitoring();
+    if (isOnboardingComplete) {
+      router.replace("/gauge");
+      return;
+    }
     router.push("/onboarding/done");
   };
 
@@ -29,11 +38,11 @@ export default function WearableScreen() {
     const provider = getWearableProvider();
     const available = await provider.isAvailable();
     if (!available) {
-      await finishOnboarding();
+      await finishPairing();
       return;
     }
     await provider.requestPermissions();
-    await finishOnboarding();
+    await finishPairing();
   };
 
   if (Platform.OS === "android") {
@@ -41,7 +50,7 @@ export default function WearableScreen() {
       <View style={styles.container}>
         <Text style={styles.title}>{systemMessages.onboardingWearableTitle}</Text>
         <Text style={styles.body}>{systemMessages.onboardingWearableBody}</Text>
-        <BlePairingPanel onPaired={() => void finishOnboarding()} />
+        <BlePairingPanel onPaired={() => void finishPairing()} />
       </View>
     );
   }

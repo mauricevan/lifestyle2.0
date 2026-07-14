@@ -14,12 +14,17 @@ import {
 import { systemMessages } from "../copy/systemMessages";
 import {
   connectToBleDevice,
+  reconnectPairedDevice,
   scanForHeartRateDevices,
   waitForFirstSample,
   type ScannedBleDevice,
 } from "../services/wearable/ble/bleHeartRateClient";
 import { requestBlePermissions } from "../services/wearable/ble/blePermissions";
-import { savePairedBleDevice } from "../services/wearable/ble/bleDeviceStore";
+import {
+  getPairedBleDevice,
+  savePairedBleDevice,
+  type PairedBleDevice,
+} from "../services/wearable/ble/bleDeviceStore";
 import { tokens } from "../theme/tokens";
 
 interface BlePairingPanelProps {
@@ -28,6 +33,7 @@ interface BlePairingPanelProps {
 
 export function BlePairingPanel({ onPaired }: BlePairingPanelProps) {
   const [devices, setDevices] = useState<ScannedBleDevice[]>([]);
+  const [pairedDevice, setPairedDevice] = useState<PairedBleDevice | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -41,7 +47,7 @@ export function BlePairingPanel({ onPaired }: BlePairingPanelProps) {
       setIsScanning(false);
       return;
     }
-    const found = await scanForHeartRateDevices(12_000);
+    const found = await scanForHeartRateDevices(15_000);
     setDevices(found);
     setIsScanning(false);
     if (found.length === 0) {
@@ -50,31 +56,63 @@ export function BlePairingPanel({ onPaired }: BlePairingPanelProps) {
   };
 
   useEffect(() => {
+    void getPairedBleDevice().then(setPairedDevice);
     void startScan();
   }, []);
+
+  const finishConnect = async (device: ScannedBleDevice) => {
+    await connectToBleDevice(device.id);
+    await savePairedBleDevice({ id: device.id, name: device.name });
+    const gotSample = await waitForFirstSample(15_000);
+    if (!gotSample) {
+      setError(systemMessages.bleNoSignal);
+      setIsConnecting(false);
+      return;
+    }
+    onPaired();
+  };
 
   const connect = async (device: ScannedBleDevice) => {
     setIsConnecting(true);
     setError(null);
     try {
-      await connectToBleDevice(device.id);
-      await savePairedBleDevice({ id: device.id, name: device.name });
-      const gotSample = await waitForFirstSample(15_000);
-      if (!gotSample) {
-        setError(systemMessages.bleNoSignal);
-        setIsConnecting(false);
-        return;
-      }
-      onPaired();
+      await finishConnect(device);
     } catch {
       setError(systemMessages.bleConnectFailed);
       setIsConnecting(false);
     }
   };
 
+  const reconnect = async () => {
+    if (!pairedDevice) {
+      return;
+    }
+    setIsConnecting(true);
+    setError(null);
+    const gotSample = await reconnectPairedDevice();
+    if (!gotSample) {
+      setError(systemMessages.bleNoSignal);
+      setIsConnecting(false);
+      return;
+    }
+    onPaired();
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.hint}>{systemMessages.bleCloseWahoo}</Text>
+      {pairedDevice ? (
+        <Pressable
+          style={styles.reconnectRow}
+          onPress={() => void reconnect()}
+          disabled={isConnecting}
+        >
+          <Text style={styles.reconnectTitle}>
+            {systemMessages.bleReconnectPaired(pairedDevice.name)}
+          </Text>
+          <Text style={styles.reconnectMeta}>{systemMessages.bleReconnectHint}</Text>
+        </Pressable>
+      ) : null}
       {isScanning ? (
         <View style={styles.center}>
           <ActivityIndicator color={tokens.colorPrimary} />
@@ -123,6 +161,26 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     color: tokens.colorWarning,
     marginBottom: tokens.space4,
+  },
+  reconnectRow: {
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    marginBottom: tokens.space4,
+    borderRadius: tokens.radiusMd,
+    backgroundColor: tokens.colorSurface,
+    borderWidth: 1,
+    borderColor: tokens.colorPrimary,
+  },
+  reconnectTitle: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: tokens.colorPrimary,
+  },
+  reconnectMeta: {
+    fontSize: 13,
+    color: tokens.colorTextSecondary,
+    marginTop: 4,
+    lineHeight: 18,
   },
   center: {
     alignItems: "center",

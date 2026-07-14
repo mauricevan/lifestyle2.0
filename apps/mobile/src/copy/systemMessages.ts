@@ -25,10 +25,17 @@ export const systemMessages = {
     "Band gevonden maar geen hartslag. Draag de band en wacht op een meting.",
   bleConnectFailed: "Koppelen mislukt. Probeer opnieuw.",
   blePermissionDenied: "Bluetooth-toestemming is nodig om de band te koppelen.",
+  bleReconnectPaired: (name: string) => `Opnieuw verbinden met ${name}`,
+  bleReconnectHint: "Band al eerder gekoppeld? Probeer opnieuw verbinden zonder te scannen.",
   settingsRepairBand: "Hartslagband opnieuw koppelen",
+  settingsBatteryOptimization: "Batterijbeheer instellen",
+  settingsBatteryHint:
+    "Zet batterijbeperkingen uit voor RPM. Op Realme: Instellingen → Batterij → App-batterijbeheer → RPM → Geen beperkingen.",
+  foregroundNotificationTitle: "RPM actief",
+  foregroundNotificationBody: "Hartslag wordt gemeten op de achtergrond",
   onboardingDoneTitle: "Systeem actief",
   onboardingDoneBody:
-    "Baseline wordt de komende 14 dagen organisch opgebouwd. Open de app wanneer je wilt — de meter werkt op de achtergrond.",
+    "Baseline wordt de komende 14 dagen organisch opgebouwd. Een vaste melding houdt hartslagmeting actief als het scherm uit staat.",
   onboardingFinishing: "Baseline berekenen…",
   onboardingGoToGauge: "Naar de meter",
 
@@ -50,6 +57,7 @@ export const systemMessages = {
 
   sensorDisconnected: "Geen signaal — schakel over naar handmatige rust-modus.",
   sensorDegraded: "Signaal vertraagd — metingen kunnen afwijken.",
+  heartRateLive: (bpm: number) => `Hartslag: ${bpm} bpm`,
 
   gaugeStatus: (remaining: number) => {
     if (remaining >= 60) {

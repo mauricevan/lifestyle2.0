@@ -8,7 +8,7 @@ import { getOnboardingFlag } from "../services/sync/localStore";
 import { mergeEpState, subscribeEpStateRealtime } from "../services/sync/supabaseSync";
 import { requestNotificationPermissions } from "../services/notifications/notificationService";
 import { runMorningBaseline } from "../features/baseline/morningBaselineService";
-import { startLiveMonitoring } from "../features/live-gauge/hyperfocusMonitor";
+import { beginLiveMonitoring, endLiveMonitoring } from "../features/live-gauge/liveMonitoringService";
 import { startEveningScheduler } from "../features/evening/eveningReportService";
 import { hydrateBleDeviceCache } from "../services/wearable/ble/bleDeviceStore";
 import { useRpmStore } from "../state/rpmStore";
@@ -26,7 +26,6 @@ export function useRpmBootstrap(): { isReady: boolean; needsOnboarding: boolean 
 
   useEffect(() => {
     let isMounted = true;
-    let stopMonitoring: (() => void) | undefined;
     let stopEvening: (() => void) | undefined;
     let stopRealtime: (() => void) | undefined;
 
@@ -61,7 +60,7 @@ export function useRpmBootstrap(): { isReady: boolean; needsOnboarding: boolean 
         initEpState(baseline.budget, baseline.status);
       }
 
-      stopMonitoring = startLiveMonitoring();
+      beginLiveMonitoring();
       stopEvening = startEveningScheduler(() => useRpmStore.getState().epState);
       if (userId) {
         stopRealtime = subscribeEpStateRealtime(userId, (state) => {
@@ -77,7 +76,7 @@ export function useRpmBootstrap(): { isReady: boolean; needsOnboarding: boolean 
     void boot();
     return () => {
       isMounted = false;
-      stopMonitoring?.();
+      void endLiveMonitoring();
       stopEvening?.();
       stopRealtime?.();
     };

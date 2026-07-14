@@ -14,6 +14,7 @@ interface RpmGaugeProps {
   remaining: number;
   isHyperfocusActive: boolean;
   sensorStatus: "connected" | "degraded" | "disconnected";
+  currentHeartRate: number | null;
 }
 
 function needlePath(angleDeg: number, size: number): string {
@@ -30,6 +31,7 @@ export function RpmGauge({
   remaining,
   isHyperfocusActive,
   sensorStatus,
+  currentHeartRate,
 }: RpmGaugeProps) {
   const rpm = epToGaugeRpm(percentUsed, DEFAULT_RPM_CONFIG.gaugeMaxRpm);
   const zone = getGaugeZone(percentUsed, isHyperfocusActive);
@@ -72,6 +74,11 @@ export function RpmGauge({
       </Svg>
       <Text style={styles.rpm}>{rpm}</Text>
       <Text style={styles.rpmLabel}>RPM</Text>
+      {currentHeartRate !== null && sensorStatus !== "disconnected" ? (
+        <Text style={styles.heartRate}>
+          {systemMessages.heartRateLive(currentHeartRate)}
+        </Text>
+      ) : null}
       <Text style={[styles.status, { color }]}>{statusLine}</Text>
     </View>
   );
@@ -94,6 +101,12 @@ const styles = StyleSheet.create({
     color: tokens.colorTextSecondary,
     letterSpacing: 2,
     textTransform: "uppercase",
+  },
+  heartRate: {
+    marginTop: tokens.space4,
+    fontSize: 18,
+    fontWeight: "600",
+    color: tokens.colorSuccess,
   },
   status: {
     marginTop: tokens.space4,

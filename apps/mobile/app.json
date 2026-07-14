@@ -34,7 +34,9 @@
         "android.permission.health.READ_STEPS",
         "android.permission.health.READ_HEART_RATE",
         "android.permission.health.READ_SLEEP",
-        "android.permission.POST_NOTIFICATIONS"
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE"
       ]
     },
     "plugins": [

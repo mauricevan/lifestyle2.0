@@ -5,6 +5,7 @@
 import { Alert, Platform, Pressable, Share, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
 import { systemMessages } from "../src/copy/systemMessages";
+import { openBatteryOptimizationSettings } from "../src/services/background/batteryOptimization";
 import {
   deleteUserData,
   exportUserData,
@@ -50,12 +51,32 @@ export default function SettingsScreen() {
       </Pressable>
       <Text style={styles.title}>{systemMessages.settingsTitle}</Text>
       {Platform.OS === "android" ? (
-        <Pressable
-          style={styles.row}
-          onPress={() => router.push("/onboarding/wearable")}
-        >
-          <Text style={styles.rowText}>{systemMessages.settingsRepairBand}</Text>
-        </Pressable>
+        <>
+          <Pressable
+            style={styles.row}
+            onPress={() => router.push("/onboarding/wearable")}
+          >
+            <Text style={styles.rowText}>{systemMessages.settingsRepairBand}</Text>
+          </Pressable>
+          <Pressable
+            style={styles.row}
+            onPress={() => {
+              Alert.alert(
+                systemMessages.settingsBatteryOptimization,
+                systemMessages.settingsBatteryHint,
+                [
+                  { text: "Annuleren", style: "cancel" },
+                  {
+                    text: "Open instellingen",
+                    onPress: openBatteryOptimizationSettings,
+                  },
+                ],
+              );
+            }}
+          >
+            <Text style={styles.rowText}>{systemMessages.settingsBatteryOptimization}</Text>
+          </Pressable>
+        </>
       ) : null}
       <Pressable style={styles.row} onPress={() => void handleExport()}>
         <Text style={styles.rowText}>{systemMessages.exportData}</Text>

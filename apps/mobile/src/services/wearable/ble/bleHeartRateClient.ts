@@ -11,17 +11,16 @@ import { BleManager, type Characteristic, type Device } from "react-native-ble-p
 import { HR_MEASUREMENT_UUID, HR_SERVICE_UUID } from "./bleConstants";
 import { getPairedBleDevice } from "./bleDeviceStore";
 import { addBleHeartRateSample } from "./bleSampleCache";
+import { scanForHeartRateDevices as runBleScan } from "./bleScanner";
 
-export interface ScannedBleDevice {
-  id: string;
-  name: string;
-  rssi: number | null;
-}
+export type { ScannedBleDevice } from "./bleScanner";
 
 let manager: BleManager | null = null;
 let connectedDevice: Device | null = null;
+let activeDeviceId: string | null = null;
 let monitorSubscription: { remove: () => void } | null = null;
 let lastSampleAt: Date | null = null;
+let connectInFlight: Promise<void> | null = null;
 
 function getManager(): BleManager {
   if (!manager) {
@@ -30,30 +29,27 @@ function getManager(): BleManager {
   return manager;
 }
 
+function isAlreadyConnectedError(error: unknown): boolean {
+  return (
+    error instanceof Error &&
+    error.message.toLowerCase().includes("already connected")
+  );
+}
+
 export async function scanForHeartRateDevices(
-  timeoutMs = 10_000
-): Promise<ScannedBleDevice[]> {
-  const ble = getManager();
-  const found = new Map<string, ScannedBleDevice>();
+  timeoutMs = 15_000
+): Promise<import("./bleScanner").ScannedBleDevice[]> {
+  await disconnectBleDevice();
+  return runBleScan(getManager(), timeoutMs);
+}
 
-  return new Promise((resolve) => {
-    const timer = setTimeout(() => {
-      ble.stopDeviceScan();
-      resolve([...found.values()].sort((a, b) => (b.rssi ?? -999) - (a.rssi ?? -999)));
-    }, timeoutMs);
-
-    ble.startDeviceScan([HR_SERVICE_UUID], null, (error, device) => {
-      if (error || !device) {
-        return;
-      }
-      const name = device.name ?? device.localName ?? "Heart rate band";
-      found.set(device.id, {
-        id: device.id,
-        name,
-        rssi: device.rssi,
-      });
-    });
-  });
+export async function reconnectPairedDevice(): Promise<boolean> {
+  const paired = await getPairedBleDevice();
+  if (!paired) {
+    return false;
+  }
+  await connectToBleDevice(paired.id);
+  return await waitForFirstSample(15_000);
 }
 
 function handleMeasurement(base64Value: string | null | undefined): void {
@@ -74,16 +70,58 @@ function handleMeasurement(base64Value: string | null | undefined): void {
 
 const listeners = new Set<(sample: HeartRateSample) => void>();
 
-export async function connectToBleDevice(deviceId: string): Promise<void> {
-  await disconnectBleDevice();
-  const ble = getManager();
-  const device = await ble.connectToDevice(deviceId, { timeout: 15_000 });
+async function attachToDevice(device: Device): Promise<void> {
   await device.discoverAllServicesAndCharacteristics();
   connectedDevice = device;
+  activeDeviceId = device.id;
   device.onDisconnected(() => {
-    connectedDevice = null;
-    monitorSubscription = null;
+    if (connectedDevice?.id === device.id) {
+      connectedDevice = null;
+      activeDeviceId = null;
+      monitorSubscription = null;
+    }
   });
+}
+
+async function connectInternal(deviceId: string): Promise<void> {
+  const ble = getManager();
+  if (activeDeviceId === deviceId && connectedDevice) {
+    const stillConnected = await connectedDevice.isConnected();
+    if (stillConnected) {
+      return;
+    }
+  }
+  if (activeDeviceId && activeDeviceId !== deviceId) {
+    await disconnectBleDevice();
+  }
+  try {
+    const device = await ble.connectToDevice(deviceId, { timeout: 15_000 });
+    await attachToDevice(device);
+  } catch (error) {
+    if (!isAlreadyConnectedError(error)) {
+      throw error;
+    }
+    const [device] = await ble.devices([deviceId]);
+    if (!device) {
+      throw error;
+    }
+    await attachToDevice(device);
+  }
+}
+
+export async function connectToBleDevice(deviceId: string): Promise<void> {
+  if (connectInFlight) {
+    await connectInFlight;
+    if (activeDeviceId === deviceId) {
+      return;
+    }
+  }
+  connectInFlight = connectInternal(deviceId);
+  try {
+    await connectInFlight;
+  } finally {
+    connectInFlight = null;
+  }
 }
 
 export async function connectToPairedDevice(): Promise<boolean> {
@@ -92,7 +130,7 @@ export async function connectToPairedDevice(): Promise<boolean> {
     return false;
   }
   await connectToBleDevice(paired.id);
-  return true;
+  return Boolean(connectedDevice);
 }
 
 export function startBleHeartRateStream(
@@ -102,21 +140,18 @@ export function startBleHeartRateStream(
   void ensureMonitoring();
   return () => {
     listeners.delete(callback);
-    if (listeners.size === 0) {
-      stopMonitoring();
-    }
   };
 }
 
 async function ensureMonitoring(): Promise<void> {
-  if (monitorSubscription) {
-    return;
-  }
   if (!connectedDevice) {
     const connected = await connectToPairedDevice();
     if (!connected || !connectedDevice) {
       return;
     }
+  }
+  if (monitorSubscription) {
+    return;
   }
   const device = connectedDevice;
   if (!device) {
@@ -141,14 +176,17 @@ function stopMonitoring(): void {
 
 export async function disconnectBleDevice(): Promise<void> {
   stopMonitoring();
-  if (connectedDevice) {
-    try {
-      await connectedDevice.cancelConnection();
-    } catch {
-      // Device may already be disconnected.
-    }
+  if (!connectedDevice) {
+    activeDeviceId = null;
+    return;
+  }
+  try {
+    await connectedDevice.cancelConnection();
+  } catch {
+    // Device may already be disconnected.
   }
   connectedDevice = null;
+  activeDeviceId = null;
 }
 
 export function getBleLastSampleAt(): Date | null {

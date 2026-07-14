@@ -2,10 +2,11 @@
  * Main gauge screen — one glance, one feeling.
  */
 
-import { Pressable, StyleSheet, Text, View } from "react-native";
-import { Link } from "expo-router";
+import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import { Link, router } from "expo-router";
 import { RpmGauge } from "../src/components/RpmGauge";
 import { EmergencyButton } from "../src/components/EmergencyButton";
+import { systemMessages } from "../src/copy/systemMessages";
 import { useRpmStore } from "../src/state/rpmStore";
 import { tokens } from "../src/theme/tokens";
 
@@ -14,19 +15,33 @@ export default function GaugeScreen() {
   const budget = epState?.budget ?? 100;
   const spent = epState?.spent ?? 0;
   const percentUsed = budget > 0 ? (spent / budget) * 100 : 0;
+  const sensorStatus = epState?.sensorStatus ?? "connected";
+  const currentHeartRate = useRpmStore((s) => s.currentHeartRate);
+  const showBandButton =
+    Platform.OS === "android" && sensorStatus === "disconnected";
 
   return (
     <View style={styles.container}>
       <Link href="/settings" asChild>
-        <Pressable style={styles.settings} accessibilityLabel="Instellingen">
-          <Text style={styles.settingsIcon}>⚙</Text>
+        <Pressable style={styles.systemButton} accessibilityLabel="Systeem">
+          <Text style={styles.systemButtonText}>Systeem</Text>
         </Pressable>
       </Link>
+      {showBandButton ? (
+        <Pressable
+          style={styles.bandButton}
+          onPress={() => router.push("/onboarding/wearable")}
+          accessibilityLabel={systemMessages.settingsRepairBand}
+        >
+          <Text style={styles.bandButtonText}>{systemMessages.settingsRepairBand}</Text>
+        </Pressable>
+      ) : null}
       <RpmGauge
         percentUsed={percentUsed}
         remaining={epState?.remaining ?? budget}
         isHyperfocusActive={epState?.isHyperfocusActive ?? false}
-        sensorStatus={epState?.sensorStatus ?? "connected"}
+        sensorStatus={sensorStatus}
+        currentHeartRate={currentHeartRate}
       />
       <EmergencyButton />
     </View>
@@ -39,15 +54,32 @@ const styles = StyleSheet.create({
     backgroundColor: tokens.colorBg,
     justifyContent: "center",
   },
-  settings: {
+  systemButton: {
+    position: "absolute",
+    top: 56,
+    left: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    zIndex: 10,
+  },
+  systemButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: tokens.colorTextSecondary,
+  },
+  bandButton: {
     position: "absolute",
     top: 56,
     right: 20,
-    padding: 8,
-    opacity: 0.5,
+    backgroundColor: tokens.colorPrimary,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: tokens.radiusMd,
+    zIndex: 10,
   },
-  settingsIcon: {
-    fontSize: 20,
-    color: tokens.colorTextSecondary,
+  bandButtonText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#fff",
   },
 });

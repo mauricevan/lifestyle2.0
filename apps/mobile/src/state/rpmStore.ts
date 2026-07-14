@@ -18,6 +18,7 @@ export interface RpmStore {
   epState: EpState | null;
   baseline: Baseline | null;
   hyperfocusSamples: Array<{ timestamp: Date; hrBpm: number; stepsPerMinute: number }>;
+  currentHeartRate: number | null;
   isOnboardingComplete: boolean;
   setUserId: (id: string | null) => void;
   setBaseline: (baseline: Baseline | null) => void;
@@ -56,6 +57,7 @@ export const useRpmStore = create<RpmStore>((set, get) => ({
   epState: null,
   baseline: null,
   hyperfocusSamples: [],
+  currentHeartRate: null,
   isOnboardingComplete: false,
 
   setUserId: (id) => set({ userId: id }),
@@ -111,7 +113,7 @@ export const useRpmStore = create<RpmStore>((set, get) => ({
       isHyperfocusActive: hyperfocus.isActive,
       lastUpdatedAt: new Date(),
     };
-    set({ epState: updated, hyperfocusSamples: nextSamples });
+    set({ epState: updated, hyperfocusSamples: nextSamples, currentHeartRate: currentHr });
     void saveLocalEpState(updated);
     if (userId) {
       void pushEpStateToServer(updated, userId);

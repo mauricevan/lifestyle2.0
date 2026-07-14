@@ -14,6 +14,7 @@ import type {
 import { Platform } from "react-native";
 
 let lastSampleAt: Date | null = null;
+let isHealthConnectReady = false;
 
 async function getHealthConnect() {
   if (Platform.OS !== "android") {
@@ -24,6 +25,23 @@ async function getHealthConnect() {
   } catch {
     return null;
   }
+}
+
+async function ensureHealthConnectReady(): Promise<boolean> {
+  const hc = await getHealthConnect();
+  if (!hc) {
+    return false;
+  }
+  if (isHealthConnectReady) {
+    return true;
+  }
+  const status = await hc.getSdkStatus();
+  if (status !== hc.SdkAvailabilityStatus.SDK_AVAILABLE) {
+    return false;
+  }
+  await hc.initialize();
+  isHealthConnectReady = true;
+  return true;
 }
 
 function mapStatus(lastAt: Date | null): SensorStatus {
@@ -62,6 +80,7 @@ export const healthConnectProvider: WearableProvider = {
       return { granted: false, missingPermissions: ["HealthConnect"] };
     }
     await hc.initialize();
+    isHealthConnectReady = true;
     const granted = await hc.requestPermission(PERMISSIONS);
     const isGranted = granted.length === PERMISSIONS.length;
     return {
@@ -97,6 +116,10 @@ export const healthConnectProvider: WearableProvider = {
   },
 
   async getStepCount(window: TimeWindow) {
+    const ready = await ensureHealthConnectReady();
+    if (!ready) {
+      return 0;
+    }
     const hc = await getHealthConnect();
     if (!hc) {
       return 0;
@@ -115,6 +138,10 @@ export const healthConnectProvider: WearableProvider = {
   },
 
   async getSleepAnalysis(date) {
+    const ready = await ensureHealthConnectReady();
+    if (!ready) {
+      return null;
+    }
     const hc = await getHealthConnect();
     if (!hc) {
       return null;
@@ -151,6 +178,10 @@ export const healthConnectProvider: WearableProvider = {
 };
 
 async function readHeartRate(window: TimeWindow): Promise<HeartRateSample[]> {
+  const ready = await ensureHealthConnectReady();
+  if (!ready) {
+    return [];
+  }
   const hc = await getHealthConnect();
   if (!hc) {
     return [];
